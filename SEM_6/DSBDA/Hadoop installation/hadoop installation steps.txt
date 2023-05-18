@@ -1,0 +1,105 @@
+sudo apt-get update
+sudo apt-get install default-jdk
+java -version
+sudo addgroup hadoop
+sudo adduser --ingroup hadoop hduser
+sudo adduser hduser sudo
+sudo apt-get - install openssh-server
+su - hduser
+ssh-keygen -t rsa -P ""
+cat $HOME/.ssh/id_rsa.pub >> $HOME/.ssh/authorized_keys
+ssh localhost
+exit
+
+Download Hadoop : http://www-eu.apache.org/dist/hadoop/common/
+cut paste the hadoop tar file on Desktop
+
+pwd
+cd /home
+sudo su
+cd [username]/
+cd Desktop/
+tar -xvzf hadoop-2.10.1.tar.gz
+ls
+sudo mv hadoop-2.10.1 /usr/local/hadoop
+sudo chown -R hduser /usr/local
+
+
+sudo nano ~/.bashrc
+export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
+export HADOOP_HOME=/usr/local/hadoop
+export PATH=$PATH:$HADOOP_HOME/bin
+export PATH=$PATH:$HADOOP_HOME/sbin
+export HADOOP_MAPRED_HOME=$HADOOP_HOME
+export HADOOP_COMMON_HOME=$HADOOP_HOME
+export HADOOP_HDFS_HOME=$HADOOP_HOME
+export YARN_HOME=$HADOOP_HOME
+export HADOOP_COMMON_LIB_NATIVE_DIR=$HADOOP_HOME/lib/native
+export HADOOP_OPTS="-Djava.library.path=$HADOOP_HOME/lib"
+
+source ~/.bashrc
+
+sudo nano /usr/local/hadoop/etc/hadoop/hadoop-env.sh
+export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
+
+cd
+su hduser
+cd /usr/local/hadoop/etc/hadoop
+
+nano core-site.xml
+<property>
+  <name>fs.default.name</name>
+  <value>hdfs://localhost:9000</value>
+</property>
+
+nano hdfs-site.xml
+<property>
+  <name>dfs.replication</name>
+  <value>1</value>
+</property>
+<property>
+  <name>dfs.namenode.name.dir</name>
+  <value>file:/usr/local/hadoop_tmp/hdfs/namenode</value>
+</property>
+<property>
+ <name>dfs.datanode.data.dir</name>
+ <value>file:/usr/local/hadoop_tmp/hdfs/datanode</value>
+</property>
+
+
+nano yarn-site.xml
+<property>
+  <name>yarn.nodemanager.aux-services</name>
+  <value>mapreduce_shuffle</value>
+</property>
+<property>
+  <name>yarn.nodemanager.aux-services.mapreduce.shuffle.class</name>
+  <value>org.apache.hadoop.mapred.ShuffleHandler</value>
+</property>
+
+sudo cp /usr/local/hadoop/etc/hadoop/mapred-site.xml.template /usr/local/hadoop/etc/hadoop/mapred-site.xml
+
+sudo nano mapred-site.xml
+<property>
+  <name>mapreduce.framework.name</name>
+  <value>yarn</value>
+</property>
+
+
+sudo mkdir -p /usr/local/hadoop_tmp
+sudo mkdir -p /usr/local/hadoop_tmp/hdfs/namenode
+sudo mkdir -p /usr/local/hadoop_tmp/hdfs/datanode
+sudo chown -R hduser /usr/local/hadoop_tmp
+
+hdfs namenode -format
+start-all.sh
+jps
+stop-all.sh
+
+
+
+
+
+
+
+
